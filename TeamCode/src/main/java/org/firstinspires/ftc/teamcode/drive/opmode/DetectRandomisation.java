@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -29,7 +30,7 @@ import java.util.List;
 //import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 
-@Autonomous(name= "detectRandomisation", group="red")
+@Autonomous(name= "redAutonomous", group="red")
 //@Disabled//comment out this line before using
 public class DetectRandomisation extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
@@ -37,6 +38,8 @@ public class DetectRandomisation extends LinearOpMode {
     SampleMecanumDrive drive;
     RingHandling rings;
     GrabberHandling grabber;
+
+    RevBlinkinLedDriver blinkin;
 
     //0 means no ring, 255 means orange ring
     //-1 for debug, but we can keep it like this because if it works, it should change to either 0 or 255
@@ -75,6 +78,9 @@ public class DetectRandomisation extends LinearOpMode {
         drive = new SampleMecanumDrive(hardwareMap);
         rings = new RingHandling(hardwareMap);
         grabber = new GrabberHandling(hardwareMap);
+
+        blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
+        blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.SKY_BLUE);
 
         drive.setPoseEstimate(new Pose2d(-61, -42, Math.PI));
 
@@ -143,6 +149,7 @@ public class DetectRandomisation extends LinearOpMode {
 
         waitForStart();
         runtime.reset();
+        blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.BEATS_PER_MINUTE_LAVA_PALETTE);
 
         grabber.moveGrabber("upHalf", "closed");
 
@@ -182,8 +189,13 @@ public class DetectRandomisation extends LinearOpMode {
             }
             rings.shoot();
             PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
+            runtime.reset();
             while(opModeIsActive() && rings.state_s != RingHandling.shooterStates.NOTHING) {
                 rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
+                if (runtime.milliseconds() > 10000) {
+                    rings.stopShooting();
+                    break;
+                }
             }
             rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
             PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
@@ -226,8 +238,13 @@ public class DetectRandomisation extends LinearOpMode {
             }
             rings.shoot();
             PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
+            runtime.reset();
             while(opModeIsActive() && rings.state_s != RingHandling.shooterStates.NOTHING) {
                 rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
+                if (runtime.milliseconds() > 9000) {
+                    rings.stopShooting();
+                    break;
+                }
             }
             rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
             PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
@@ -270,8 +287,13 @@ public class DetectRandomisation extends LinearOpMode {
             }
             rings.shoot();
             PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
+            runtime.reset();
             while(opModeIsActive() && rings.state_s != RingHandling.shooterStates.NOTHING) {
                 rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
+                if (runtime.milliseconds() > 10000) {
+                    rings.stopShooting();
+                    break;
+                }
             }
             rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
             PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
@@ -280,6 +302,7 @@ public class DetectRandomisation extends LinearOpMode {
         }
 
         PersistentStorage.currentPose = drive.getPoseEstimate();
+        blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.SKY_BLUE);
     }
 
     //detection pipeline

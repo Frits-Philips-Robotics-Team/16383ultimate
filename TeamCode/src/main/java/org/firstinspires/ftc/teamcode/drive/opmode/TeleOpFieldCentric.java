@@ -33,6 +33,7 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -49,6 +50,10 @@ public class TeleOpFieldCentric extends OpMode
     SampleMecanumDrive drive;
     RingHandling rings;
     GrabberHandling grabber;
+
+    RevBlinkinLedDriver blinkin;
+    RevBlinkinLedDriver.BlinkinPattern pattern;
+    RevBlinkinLedDriver.BlinkinPattern prevPattern;
     ElapsedTime rotateTimer = new ElapsedTime();
     ElapsedTime matchTimer = new ElapsedTime();
 
@@ -74,6 +79,8 @@ public class TeleOpFieldCentric extends OpMode
         rings = new RingHandling(hardwareMap);
         grabber = new GrabberHandling(hardwareMap);
 
+        blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
+        blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.SKY_BLUE);
         //drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         drive.setPoseEstimate(PersistentStorage.currentPose);
@@ -102,6 +109,9 @@ public class TeleOpFieldCentric extends OpMode
     @Override
     public void start() {
         matchTimer.reset();
+
+        pattern = RevBlinkinLedDriver.BlinkinPattern.CP2_HEARTBEAT_SLOW;
+        blinkin.setPattern(pattern);
     }
 
     /*
@@ -160,6 +170,7 @@ public class TeleOpFieldCentric extends OpMode
         // Get ready for shooting and point at the goal
         if (gamepad1.left_bumper) {
             if (rings.getRingNumber() != 0) {
+                pattern = RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_RED;
                 double calcHeading = rings.shootGetHeading(poseEstimate, target);
                 if (Math.abs(calcHeading - currentHeading) < Math.PI) {
                     drive.turn(calcHeading - currentHeading);
@@ -179,6 +190,10 @@ public class TeleOpFieldCentric extends OpMode
             rings.stopShooting();
         }
 
+        if (rings.state_s == RingHandling.shooterStates.NOTHING && pattern == RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_RED) {
+            pattern = RevBlinkinLedDriver.BlinkinPattern.CP2_HEARTBEAT_SLOW;
+        }
+
         if (gamepad2.right_bumper) {
             drive.setPoseEstimate(new Pose2d(-62.3, -64.2, Math.PI));
             PersistentStorage.currentPose = new Pose2d(-62.3, -64.2, Math.PI);
@@ -187,9 +202,11 @@ public class TeleOpFieldCentric extends OpMode
 
         if (gamepad1.a) {
             rings.setIntake(1);
+            pattern = RevBlinkinLedDriver.BlinkinPattern.CP2_HEARTBEAT_FAST;
         }
         else if (gamepad1.y) {
             rings.setIntake(0);
+            pattern = RevBlinkinLedDriver.BlinkinPattern.CP2_HEARTBEAT_SLOW;
         }
         else if (gamepad1.x) {
             rings.setIntake(-1);
@@ -225,6 +242,11 @@ public class TeleOpFieldCentric extends OpMode
         }
         else if (gamepad1.right_stick_button) {
             target = "red right";
+        }
+
+        if (pattern != prevPattern) {
+            blinkin.setPattern(pattern);
+            prevPattern = pattern;
         }
 
         // updates everything. Localizer, drive functions, etc.

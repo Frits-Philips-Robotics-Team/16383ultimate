@@ -79,7 +79,7 @@ public class RingHandling {
         Pose2d tower;
         
         if (target.equals("red high")) {
-            tower = new Pose2d(72, -36);
+            tower = new Pose2d(72, -38);
         }
         else if (target.equals("blue high")) {
             tower = new Pose2d(72, 36);
@@ -96,7 +96,7 @@ public class RingHandling {
 
         currentPose = currentPose.minus(tower);
         Vector2d vector = new Vector2d(currentPose.getX(), currentPose.getY());
-        return vector.rotated(Math.PI - Math.toRadians(3)).angle();
+        return vector.rotated(Math.PI - Math.toRadians(4)).angle();
     }
 
     public double shootGetRPM (Pose2d currentPose, String target) {
@@ -104,12 +104,12 @@ public class RingHandling {
         Pose2d tower;
 
         if (target.equals("red high")) {
-            tower = new Pose2d(72, -36);
-            goalHeight = 46;
+            tower = new Pose2d(72, -38);
+            goalHeight = 44;
         }
         else if (target.equals("blue high")) {
             tower = new Pose2d(72, 36);
-            goalHeight = 46;
+            goalHeight = 44;
         }
         else if (target.equals("red left")) {
             tower = new Pose2d(72, -9);
@@ -128,14 +128,14 @@ public class RingHandling {
         Vector2d vector = new Vector2d(currentPose.getX(), currentPose.getY());
         double distance = 2.54 * vector.norm() - 20; // Distance to goal converted from inches to cm
 
-        return (Math.sqrt((490*Math.pow(distance, 2))/(distance*Math.tan(Math.toRadians(28))-goalHeight)))/(0.15) - Math.pow(0.03 * distance, 2.5);
+        return (Math.sqrt((490*Math.pow(distance, 2))/(distance*Math.tan(Math.toRadians(28))-goalHeight)))/(0.15) - Math.pow(0.04 * distance, 2.55);
     }
 
     public double getDistance (Pose2d currentPose, String target) {
         Pose2d tower;
 
         if (target.equals("red high")) {
-            tower = new Pose2d(72, -36);
+            tower = new Pose2d(72, -38);
         }
         else if (target.equals("blue high")) {
             tower = new Pose2d(72, 36);
