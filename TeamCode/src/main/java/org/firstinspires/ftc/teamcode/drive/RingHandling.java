@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +22,8 @@ public class RingHandling {
     Servo pusher;
     DistanceSensor distance;
 
-    PIDFCoefficients pidf = new PIDFCoefficients(100, 0, 2, 15.6);
+    private VoltageSensor batteryVoltageSensor;
+    PIDFCoefficients pidf = new PIDFCoefficients(60, 0.01, 0.01, 14.3);
 
     double pusherStart;
     double shooterTime;
@@ -46,8 +48,12 @@ public class RingHandling {
         pusher = hardwareMap.get(Servo.class, "pusher");
         distance = hardwareMap.get(DistanceSensor.class, "distance");
 
-        //shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
+
         pusher.setPosition(0.2);
+
+        batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
+        pidf = new PIDFCoefficients(pidf.p, pidf.i, pidf.d, pidf.f * 12 / batteryVoltageSensor.getVoltage());
+        shooter.setVelocityPIDFCoefficients(pidf.p, pidf.i, pidf.d, pidf.f);
 
         state_s = shooterStates.NOTHING;
 
@@ -85,13 +91,13 @@ public class RingHandling {
             tower = new Pose2d(72, 36);
         }
         else if (target.equals("red left")) {
-            tower = new Pose2d(72, -9);
+            tower = new Pose2d(72, -10);
         }
         else if (target.equals("red mid")) {
-            tower = new Pose2d(72, -17);
+            tower = new Pose2d(72, -18);
         }
         else {
-            tower = new Pose2d(72, -23);
+            tower = new Pose2d(72, -24);
         }
 
         currentPose = currentPose.minus(tower);
@@ -112,16 +118,16 @@ public class RingHandling {
             goalHeight = 44;
         }
         else if (target.equals("red left")) {
-            tower = new Pose2d(72, -9);
-            goalHeight = 31;
+            tower = new Pose2d(72, -10);
+            goalHeight = 37;
         }
         else if (target.equals("red mid")) {
-            tower = new Pose2d(72, -17);
-            goalHeight = 31;
+            tower = new Pose2d(72, -18);
+            goalHeight = 37;
         }
         else {
-            tower = new Pose2d(72, -23);
-            goalHeight = 31;
+            tower = new Pose2d(72, -24);
+            goalHeight = 37;
         }
 
         currentPose = currentPose.minus(tower);
@@ -141,13 +147,13 @@ public class RingHandling {
             tower = new Pose2d(72, 36);
         }
         else if (target.equals("red left")) {
-            tower = new Pose2d(72, -9);
+            tower = new Pose2d(72, -10);
         }
         else if (target.equals("red mid")) {
-            tower = new Pose2d(72, -17);
+            tower = new Pose2d(72, -18);
         }
         else {
-            tower = new Pose2d(72, -23);
+            tower = new Pose2d(72, -24);
         }
 
         currentPose = currentPose.minus(tower);

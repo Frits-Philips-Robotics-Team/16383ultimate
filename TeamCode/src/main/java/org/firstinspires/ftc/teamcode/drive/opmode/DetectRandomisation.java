@@ -82,32 +82,33 @@ public class DetectRandomisation extends LinearOpMode {
         blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
         blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.SKY_BLUE);
 
-        drive.setPoseEstimate(new Pose2d(-61, -42, Math.PI));
+        drive.setPoseEstimate(new Pose2d(-62.2, -44.4, Math.PI));
 
-        Trajectory dropA = drive.trajectoryBuilder(new Pose2d(-61, -42, Math.PI), 0)
-                .lineToConstantHeading(new Vector2d(12, -48))
+        Trajectory dropA = drive.trajectoryBuilder(new Pose2d(-62.2, -44.4, Math.PI), 0)
+                .lineToConstantHeading(new Vector2d(12, -53))
                 .build();
         Trajectory pickUpA = drive.trajectoryBuilder(dropA.end(), Math.toRadians(155))
-                .splineToLinearHeading(new Pose2d(-24, -19, 0.5 * Math.PI), Math.PI)
+                .splineToLinearHeading(new Pose2d(-24, -21.5, 0.5 * Math.PI), Math.PI)
                 .build();
         Trajectory dropA2 = drive.trajectoryBuilder(new Pose2d(pickUpA.end().getX() - 7, pickUpA.end().getY(), 0.5 * Math.PI), 0)
-                .splineToLinearHeading(new Pose2d(12, -40, Math.PI), 0)
+                .splineToLinearHeading(new Pose2d(12, -46, Math.PI), 0)
                 .build();
-        Trajectory shootA = drive.trajectoryBuilder(dropA2.end(), Math.PI)
-                .splineToLinearHeading(new Pose2d(-4, -37, 0), Math.PI)
+        Trajectory shootA = drive.trajectoryBuilder(dropA2.end(), 0.5 * Math.PI)
+                .splineToConstantHeading(new Vector2d(6, -37), Math.PI)
+                .splineToSplineHeading(new Pose2d(-4, -37, 0), Math.PI)
                 .build();
         Trajectory parkA = drive.trajectoryBuilder(shootA.end(), 0)
                 .splineToLinearHeading(new Pose2d(12, shootA.end().getY(), 0), 0)
                 .build();
 
-        Trajectory dropB = drive.trajectoryBuilder(new Pose2d(-61, -42, Math.PI), 0)
-                .lineToConstantHeading(new Vector2d(36, -30))
+        Trajectory dropB = drive.trajectoryBuilder(new Pose2d(-62.2, -44.4, Math.PI), 0)
+                .lineToConstantHeading(new Vector2d(36, -33))
                 .build();
         Trajectory pickUpB = drive.trajectoryBuilder(dropB.end(), Math.PI)
-                .splineToLinearHeading(new Pose2d(-24, -19, 0.5 * Math.PI), Math.PI)
+                .splineToLinearHeading(new Pose2d(-24, -22, 0.5 * Math.PI), Math.PI)
                 .build();
         Trajectory dropB2 = drive.trajectoryBuilder(new Pose2d(pickUpB.end().getX() - 7, pickUpB.end().getY(), 0.5 * Math.PI), 0)
-                .splineToLinearHeading(new Pose2d(36, -19, Math.PI), 0)
+                .splineToLinearHeading(new Pose2d(36, -25, Math.PI), 0)
                 .build();
         Trajectory shootB = drive.trajectoryBuilder(dropB2.end(), Math.toRadians(135))
                 .splineToLinearHeading(new Pose2d(-4, -30, 0), Math.PI)
@@ -116,14 +117,14 @@ public class DetectRandomisation extends LinearOpMode {
                 .splineToLinearHeading(new Pose2d(12, shootB.end().getY(), 0), 0)
                 .build();
 
-        Trajectory dropC = drive.trajectoryBuilder(new Pose2d(-61, -42, Math.PI), 0)
-                .lineToConstantHeading(new Vector2d(60, -49))
+        Trajectory dropC = drive.trajectoryBuilder(new Pose2d(-62.2, -44.4, Math.PI), 0)
+                .lineToConstantHeading(new Vector2d(60, -52))
                 .build();
         Trajectory pickUpC = drive.trajectoryBuilder(dropC.end(), Math.toRadians(155))
-                .splineToLinearHeading(new Pose2d(-24, -18, 0.5 * Math.PI), Math.PI)
+                .splineToLinearHeading(new Pose2d(-24, -21.5, 0.5 * Math.PI), Math.PI)
                 .build();
         Trajectory dropC2 = drive.trajectoryBuilder(new Pose2d(pickUpC.end().getX() - 7, pickUpC.end().getY(), 0.5 * Math.PI), 0)
-                .splineToLinearHeading(new Pose2d(60, -41, Math.PI), 0)
+                .splineToLinearHeading(new Pose2d(60, -46, Math.PI), 0)
                 .build();
         Trajectory shootC = drive.trajectoryBuilder(dropC2.end(), Math.toRadians(135))
                 .splineToLinearHeading(new Pose2d(-4, -37, 0), Math.PI)

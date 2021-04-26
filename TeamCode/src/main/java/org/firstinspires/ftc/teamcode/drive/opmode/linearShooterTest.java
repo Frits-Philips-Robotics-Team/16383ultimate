@@ -33,29 +33,43 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.qualcomm.hardware.ams.AMSColorSensor;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.drive.RingHandling;
 import org.firstinspires.ftc.teamcode.util.PersistentStorage;
 
+
+/**
+ * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
+ * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
+ * of the FTC Driver Station. When an selection is made from the menu, the corresponding OpMode
+ * class is instantiated on the Robot Controller and executed.
+ *
+ * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
+ * It includes all the skeletal structure that all linear OpModes contain.
+ *
+ * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
+ * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
+ */
+
 @Config
-@TeleOp(name="ShooterTest", group="basic")
-public class ShooterTest extends OpMode
-{
-//    SampleMecanumDrive drive;
+@TeleOp(name="linearShooterTest", group="basic")
+public class linearShooterTest extends LinearOpMode {
+    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(0, 0 , 0, 0);
+
     RingHandling rings;
     ElapsedTime rotateTimer = new ElapsedTime();
     ElapsedTime gameTimer = new ElapsedTime();
 
     private VoltageSensor batteryVoltageSensor;
-    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(0, 0 , 0, 0);
 
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
 
@@ -78,13 +92,9 @@ public class ShooterTest extends OpMode
 
     double calcRPM;
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
+
     @Override
-    public void init() {
-        // Declare OpMode members.
-//        drive = new SampleMecanumDrive(hardwareMap);
+    public void runOpMode() {
         rings = new RingHandling(hardwareMap);
 
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
@@ -95,7 +105,7 @@ public class ShooterTest extends OpMode
         lastKi = 0;
         lastKd = 0;
 
-        MOTOR_VELO_PID = new PIDFCoefficients(lastKp, lastKi, lastKd, lastKf);
+        //MOTOR_VELO_PID = new PIDFCoefficients(lastKp, lastKi, lastKd, lastKf);
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
         setPIDFCoefficients(rings.shooter, MOTOR_VELO_PID);
 
@@ -107,87 +117,65 @@ public class ShooterTest extends OpMode
         rotationSetpoint = currentHeading = PersistentStorage.currentPose.getHeading();
         poseOffset = new Pose2d(0, 0, 0);
         rpmSetpoint = 6000;
-    }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
-    @Override
-    public void init_loop() {
-//        drive.update();
-    }
+        waitForStart();
 
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
-    @Override
-    public void start() {
         matchTimer.reset();
-    }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
-    @Override
-    public void loop() {
-        Pose2d poseEstimate = PersistentStorage.currentPose;
+        while (opModeIsActive()) {
 
-        // Broadly setting rpm with trigger and finetuning using dpad
-        if (gamepad2.right_bumper) {
-            rpmSetpoint = gamepad2.right_trigger * 6000;
-        }
-        else if (gamepad2.dpad_down) {
-            rpmSetpoint -= 10;
-        }
-        else if (gamepad2.dpad_up) {
-            rpmSetpoint += 10;
-        }
+            Pose2d poseEstimate = PersistentStorage.currentPose;
 
-        // Shooter disable and enable
-        if (gamepad2.y) {
-            rings.setRPM(0);
-        }
-        else if (gamepad2.x) {
-            rings.setRPM(rpmSetpoint);
-        }
+            // Broadly setting rpm with trigger and finetuning using dpad
+            if (gamepad2.right_bumper) {
+                rpmSetpoint = gamepad2.right_trigger * 6000;
+            }
+            else if (gamepad2.dpad_down) {
+                rpmSetpoint -= 10;
+            }
+            else if (gamepad2.dpad_up) {
+                rpmSetpoint += 10;
+            }
 
-        if (gamepad2.left_bumper) {
-            rings.triggerPusher(matchTimer.milliseconds());
-        }
+            // Shooter disable and enable
+            if (gamepad2.y) {
+                rings.setRPM(0);
+            }
+            else if (gamepad2.x) {
+                rings.setRPM(rpmSetpoint);
+            }
 
-        if (lastKp != MOTOR_VELO_PID.p || lastKi != MOTOR_VELO_PID.i || lastKd != MOTOR_VELO_PID.d || lastKf != MOTOR_VELO_PID.f) {
-            setPIDFCoefficients(rings.shooter, MOTOR_VELO_PID);
+            if (gamepad2.left_bumper) {
+                rings.triggerPusher(matchTimer.milliseconds());
+            }
 
-            lastKp = MOTOR_VELO_PID.p;
-            lastKi = MOTOR_VELO_PID.i;
-            lastKd = MOTOR_VELO_PID.d;
-            lastKf = MOTOR_VELO_PID.f;
-        }
+            if (lastKp != MOTOR_VELO_PID.p || lastKi != MOTOR_VELO_PID.i || lastKd != MOTOR_VELO_PID.d || lastKf != MOTOR_VELO_PID.f) {
+                setPIDFCoefficients(rings.shooter, MOTOR_VELO_PID);
 
-        // updates everything. Localizer, drive functions, etc.
+                lastKp = MOTOR_VELO_PID.p;
+                lastKi = MOTOR_VELO_PID.i;
+                lastKd = MOTOR_VELO_PID.d;
+                lastKf = MOTOR_VELO_PID.f;
+            }
+
+            // updates everything. Localizer, drive functions, etc.
 //        drive.update();
-        rings.update(matchTimer.milliseconds(), poseEstimate, "red");
-        // This is what the shooter test is all about
-        //telemetry.addData("Set RPM: ", (int) rpmSetpoint);
-        telemetry.addData("Current RPM", (int) rings.getRPM());
+            rings.update(matchTimer.milliseconds(), poseEstimate, "red");
+            // This is what the shooter test is all about
+            //telemetry.addData("Set RPM: ", (int) rpmSetpoint);
+            telemetry.addData("Current RPM", (int) rings.getRPM());
 
-        telemetry.addData("set rpm", rpmSetpoint);
+            telemetry.addData("set rpm", rpmSetpoint);
 //        telemetry.addData("distance sensor", rings.getDistanceSensor());
-        PIDFCoefficients pidf = rings.shooter.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-        telemetry.addData("PIDF", "%f %f %f %f", pidf.p, pidf.i, pidf.d, pidf.f);
-        telemetry.addData("setPIDF", "%f %f %f %f", MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f);
+            PIDFCoefficients pidf = rings.shooter.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+            telemetry.addData("PIDF", "%f %f %f %f", pidf.p, pidf.i, pidf.d, pidf.f);
+            telemetry.addData("setPIDF", "%f %f %f %f", MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f);
 
-        telemetry.addData("upperBound", 5000);
-        telemetry.addData("lowerBound", 0);
+            telemetry.addData("upperBound", 5000);
+            telemetry.addData("lowerBound", 0);
 
-        telemetry.update();
-    }
-
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
-    @Override
-    public void stop() {
+            telemetry.update();
+        }
     }
 
     private void setPIDFCoefficients(DcMotorEx motor, PIDFCoefficients coefficients) {
@@ -202,3 +190,4 @@ public class ShooterTest extends OpMode
         return 32767 / (maxRPM / 60 * 28);
     }
 }
+
