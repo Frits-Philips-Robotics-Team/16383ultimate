@@ -112,7 +112,7 @@ public class SampleMecanumDrive extends MecanumDrive {
         turnController.setInputBounds(0, 2 * Math.PI);
 
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
-                new Pose2d(0.5, 0.5, Math.toRadians(2.0)), 0.5);
+                new Pose2d(0.5, 0.5, Math.toRadians(2.0)), 1);
 
         poseHistory = new ArrayList<>();
 
@@ -207,6 +207,9 @@ public class SampleMecanumDrive extends MecanumDrive {
         waitForIdle();
     }
 
+    public void cancelFollowing() {
+        mode = Mode.IDLE;
+    }
     public Pose2d getLastError() {
         switch (mode) {
             case FOLLOW_TRAJECTORY:

@@ -25,6 +25,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 //import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -40,6 +41,8 @@ public class DetectRandomisation extends LinearOpMode {
     GrabberHandling grabber;
 
     RevBlinkinLedDriver blinkin;
+
+    List<String> targetsList = Arrays.asList("red right", "red mid", "red left");
 
     //0 means no ring, 255 means orange ring
     //-1 for debug, but we can keep it like this because if it works, it should change to either 0 or 255
@@ -82,9 +85,9 @@ public class DetectRandomisation extends LinearOpMode {
         blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
         blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.SKY_BLUE);
 
-        drive.setPoseEstimate(new Pose2d(-62.2, -44.4, Math.PI));
+        drive.setPoseEstimate(new Pose2d(-62, -43.8, Math.PI));
 
-        Trajectory dropA = drive.trajectoryBuilder(new Pose2d(-62.2, -44.4, Math.PI), 0)
+        Trajectory dropA = drive.trajectoryBuilder(new Pose2d(-62, -43.8, Math.PI), 0)
                 .lineToConstantHeading(new Vector2d(12, -53))
                 .build();
         Trajectory pickUpA = drive.trajectoryBuilder(dropA.end(), Math.toRadians(155))
@@ -94,15 +97,15 @@ public class DetectRandomisation extends LinearOpMode {
                 .splineToLinearHeading(new Pose2d(12, -46, Math.PI), 0)
                 .build();
         Trajectory shootA = drive.trajectoryBuilder(dropA2.end(), 0.5 * Math.PI)
-                .splineToConstantHeading(new Vector2d(6, -37), Math.PI)
-                .splineToSplineHeading(new Pose2d(-4, -37, 0), Math.PI)
+                .splineToSplineHeading(new Pose2d(6, -32, 0.5 * Math.PI), Math.PI)
+                .splineToSplineHeading(new Pose2d(-2, -25, 0), Math.PI)
                 .build();
         Trajectory parkA = drive.trajectoryBuilder(shootA.end(), 0)
                 .splineToLinearHeading(new Pose2d(12, shootA.end().getY(), 0), 0)
                 .build();
 
-        Trajectory dropB = drive.trajectoryBuilder(new Pose2d(-62.2, -44.4, Math.PI), 0)
-                .lineToConstantHeading(new Vector2d(36, -33))
+        Trajectory dropB = drive.trajectoryBuilder(new Pose2d(-62, -43.8, Math.PI), 0)
+                .lineToConstantHeading(new Vector2d(36, -32))
                 .build();
         Trajectory pickUpB = drive.trajectoryBuilder(dropB.end(), Math.PI)
                 .splineToLinearHeading(new Pose2d(-24, -22, 0.5 * Math.PI), Math.PI)
@@ -111,30 +114,30 @@ public class DetectRandomisation extends LinearOpMode {
                 .splineToLinearHeading(new Pose2d(36, -25, Math.PI), 0)
                 .build();
         Trajectory shootB = drive.trajectoryBuilder(dropB2.end(), Math.toRadians(135))
-                .splineToLinearHeading(new Pose2d(-4, -30, 0), Math.PI)
+                .splineToLinearHeading(new Pose2d(-2, -25, 0), Math.PI)
                 .build();
         Trajectory parkB = drive.trajectoryBuilder(shootB.end(), 0)
                 .splineToLinearHeading(new Pose2d(12, shootB.end().getY(), 0), 0)
                 .build();
 
-        Trajectory dropC = drive.trajectoryBuilder(new Pose2d(-62.2, -44.4, Math.PI), 0)
+        Trajectory dropC = drive.trajectoryBuilder(new Pose2d(-62, -43.8, Math.PI), 0)
                 .lineToConstantHeading(new Vector2d(60, -52))
                 .build();
         Trajectory pickUpC = drive.trajectoryBuilder(dropC.end(), Math.toRadians(155))
-                .splineToLinearHeading(new Pose2d(-24, -21.5, 0.5 * Math.PI), Math.PI)
+                .splineToLinearHeading(new Pose2d(-24, -20, 0.5 * Math.PI), Math.PI)
                 .build();
         Trajectory dropC2 = drive.trajectoryBuilder(new Pose2d(pickUpC.end().getX() - 7, pickUpC.end().getY(), 0.5 * Math.PI), 0)
                 .splineToLinearHeading(new Pose2d(60, -46, Math.PI), 0)
                 .build();
         Trajectory shootC = drive.trajectoryBuilder(dropC2.end(), Math.toRadians(135))
-                .splineToLinearHeading(new Pose2d(-4, -37, 0), Math.PI)
+                .splineToLinearHeading(new Pose2d(-2, -25, 0), Math.PI)
                 .build();
         Trajectory parkC = drive.trajectoryBuilder(shootC.end(), 0)
                 .splineToLinearHeading(new Pose2d(12, shootC.end().getY(), 0), 0)
                 .build();
 
         Trajectory grabWobble = drive.trajectoryBuilder(pickUpA.end(), Math.PI)
-                .strafeRight(-7)
+                .strafeRight(-9)
                 .build();
 
         telemetry.addData("Values", valBottom + "   " + valTop);
@@ -156,9 +159,9 @@ public class DetectRandomisation extends LinearOpMode {
 
         if (valBottom == 0 && valTop == 0) { // No rings; target zone A
             drive.followTrajectory(dropA);
-            grabber.moveGrabber("down", "closed");
+            grabber.moveGrabber("straight", "closed");
             sleep(300);
-            grabber.moveGrabber("down", "open");
+            grabber.moveGrabber("straight", "open");
             sleep(500);
             grabber.moveGrabber("upHalf", "open");
             drive.followTrajectory(pickUpA);
@@ -177,37 +180,64 @@ public class DetectRandomisation extends LinearOpMode {
             grabber.moveGrabber("upHalf", "open");
             drive.followTrajectory(shootA);
             grabber.moveGrabber("inSize", "closed");
-            double calcHeading = rings.shootGetHeading(drive.getPoseEstimate(), "red high");
-            double currentHeading = drive.getPoseEstimate().getHeading();
-            if (Math.abs(calcHeading - currentHeading) < Math.PI) {
-                drive.turn(calcHeading - currentHeading);
-            }
-            else if (calcHeading - currentHeading > 0){
-                drive.turn((calcHeading - currentHeading) - 2 * Math.PI);
-            }
-            else {
-                drive.turn(2 * Math.PI + (calcHeading - currentHeading));
-            }
-            rings.shoot();
-            PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
-            runtime.reset();
-            while(opModeIsActive() && rings.state_s != RingHandling.shooterStates.NOTHING) {
-                rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
-                if (runtime.milliseconds() > 10000) {
-                    rings.stopShooting();
-                    break;
+//            double calcHeading = rings.shootGetHeading(drive.getPoseEstimate(), "red right");
+//            double currentHeading = drive.getPoseEstimate().getHeading();
+//            if (Math.abs(calcHeading - currentHeading) < Math.PI) {
+//                drive.turn(calcHeading - currentHeading);
+//            }
+//            else if (calcHeading - currentHeading > 0){
+//                drive.turn((calcHeading - currentHeading) - 2 * Math.PI);
+//            }
+//            else {
+//                drive.turn(2 * Math.PI + (calcHeading - currentHeading));
+//            }
+//            rings.shoot();
+//            PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
+//            runtime.reset();
+//            while(opModeIsActive() && rings.state_s != RingHandling.shooterStates.NOTHING) {
+//                rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
+//                if (runtime.milliseconds() > 10000) {
+//                    rings.stopShooting();
+//                    break;
+//                }
+//            }
+//            rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
+//            PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
+//            drive.followTrajectory(parkA);
+//            PersistentStorage.currentPose = drive.getPoseEstimate();
+            for (int i = 0; i < targetsList.size(); i++) {
+                double calcHeading = rings.shootGetHeading(drive.getPoseEstimate(), targetsList.get(i));
+                double currentHeading = drive.getPoseEstimate().getHeading();
+                if (Math.abs(calcHeading - currentHeading) < Math.PI) {
+                    drive.turn(calcHeading - currentHeading);
+                }
+                else if (calcHeading - currentHeading > 0){
+                    drive.turn((calcHeading - currentHeading) - 2 * Math.PI);
+                }
+                else {
+                    drive.turn(2 * Math.PI + (calcHeading - currentHeading));
+                }
+                rings.shoot();
+                PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
+                runtime.reset();
+                while(opModeIsActive() && rings.state_s != RingHandling.shooterStates.NOTHING) {
+                    rings.update(runtime.milliseconds(), drive.getPoseEstimate(), targetsList.get(i));
+                    if (runtime.milliseconds() > 4000) {
+                        rings.stopShooting();
+                        break;
+                    }
                 }
             }
-            rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
+            rings.update(runtime.milliseconds(), drive.getPoseEstimate(), targetsList.get(targetsList.size() - 1));
             PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
             drive.followTrajectory(parkA);
             PersistentStorage.currentPose = drive.getPoseEstimate();
         }
         else if (valTop == 255) { // All rings; target zone C
             drive.followTrajectory(dropC);
-            grabber.moveGrabber("down", "closed");
+            grabber.moveGrabber("straight", "closed");
             sleep(300);
-            grabber.moveGrabber("down", "open");
+            grabber.moveGrabber("straight", "open");
             sleep(600);
             grabber.moveGrabber("upHalf", "open");
             drive.followTrajectory(pickUpC);
@@ -226,28 +256,55 @@ public class DetectRandomisation extends LinearOpMode {
             grabber.moveGrabber("upHalf", "open");
             drive.followTrajectory(shootC);
             grabber.moveGrabber("inSize", "closed");
-            double calcHeading = rings.shootGetHeading(drive.getPoseEstimate(), "red high");
-            double currentHeading = drive.getPoseEstimate().getHeading();
-            if (Math.abs(calcHeading - currentHeading) < Math.PI) {
-                drive.turn(calcHeading - currentHeading);
-            }
-            else if (calcHeading - currentHeading > 0){
-                drive.turn((calcHeading - currentHeading) - 2 * Math.PI);
-            }
-            else {
-                drive.turn(2 * Math.PI + (calcHeading - currentHeading));
-            }
-            rings.shoot();
-            PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
-            runtime.reset();
-            while(opModeIsActive() && rings.state_s != RingHandling.shooterStates.NOTHING) {
-                rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
-                if (runtime.milliseconds() > 9000) {
-                    rings.stopShooting();
-                    break;
+//            double calcHeading = rings.shootGetHeading(drive.getPoseEstimate(), "red high");
+//            double currentHeading = drive.getPoseEstimate().getHeading();
+//            if (Math.abs(calcHeading - currentHeading) < Math.PI) {
+//                drive.turn(calcHeading - currentHeading);
+//            }
+//            else if (calcHeading - currentHeading > 0){
+//                drive.turn((calcHeading - currentHeading) - 2 * Math.PI);
+//            }
+//            else {
+//                drive.turn(2 * Math.PI + (calcHeading - currentHeading));
+//            }
+//            rings.shoot();
+//            PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
+//            runtime.reset();
+//            while(opModeIsActive() && rings.state_s != RingHandling.shooterStates.NOTHING) {
+//                rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
+//                if (runtime.milliseconds() > 9000) {
+//                    rings.stopShooting();
+//                    break;
+//                }
+//            }
+//            rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
+//            PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
+//            drive.followTrajectory(parkC);
+//            PersistentStorage.currentPose = drive.getPoseEstimate();
+            for (int i = 0; i < targetsList.size(); i++) {
+                double calcHeading = rings.shootGetHeading(drive.getPoseEstimate(), targetsList.get(i));
+                double currentHeading = drive.getPoseEstimate().getHeading();
+                if (Math.abs(calcHeading - currentHeading) < Math.PI) {
+                    drive.turn(calcHeading - currentHeading);
+                }
+                else if (calcHeading - currentHeading > 0){
+                    drive.turn((calcHeading - currentHeading) - 2 * Math.PI);
+                }
+                else {
+                    drive.turn(2 * Math.PI + (calcHeading - currentHeading));
+                }
+                rings.shoot();
+                PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
+                runtime.reset();
+                while(opModeIsActive() && rings.state_s != RingHandling.shooterStates.NOTHING) {
+                    rings.update(runtime.milliseconds(), drive.getPoseEstimate(), targetsList.get(i));
+                    if (runtime.milliseconds() > 4000) {
+                        rings.stopShooting();
+                        break;
+                    }
                 }
             }
-            rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
+            rings.update(runtime.milliseconds(), drive.getPoseEstimate(), targetsList.get(targetsList.size() - 1));
             PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
             drive.followTrajectory(parkC);
             PersistentStorage.currentPose = drive.getPoseEstimate();
@@ -275,28 +332,55 @@ public class DetectRandomisation extends LinearOpMode {
             grabber.moveGrabber("upHalf", "open");
             drive.followTrajectory(shootB);
             grabber.moveGrabber("inSize", "closed");
-            double calcHeading = rings.shootGetHeading(drive.getPoseEstimate(), "red high");
-            double currentHeading = drive.getPoseEstimate().getHeading();
-            if (Math.abs(calcHeading - currentHeading) < Math.PI) {
-                drive.turn(calcHeading - currentHeading);
-            }
-            else if (calcHeading - currentHeading > 0){
-                drive.turn((calcHeading - currentHeading) - 2 * Math.PI);
-            }
-            else {
-                drive.turn(2 * Math.PI + (calcHeading - currentHeading));
-            }
-            rings.shoot();
-            PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
-            runtime.reset();
-            while(opModeIsActive() && rings.state_s != RingHandling.shooterStates.NOTHING) {
-                rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
-                if (runtime.milliseconds() > 10000) {
-                    rings.stopShooting();
-                    break;
+//            double calcHeading = rings.shootGetHeading(drive.getPoseEstimate(), "red high");
+//            double currentHeading = drive.getPoseEstimate().getHeading();
+//            if (Math.abs(calcHeading - currentHeading) < Math.PI) {
+//                drive.turn(calcHeading - currentHeading);
+//            }
+//            else if (calcHeading - currentHeading > 0){
+//                drive.turn((calcHeading - currentHeading) - 2 * Math.PI);
+//            }
+//            else {
+//                drive.turn(2 * Math.PI + (calcHeading - currentHeading));
+//            }
+//            rings.shoot();
+//            PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
+//            runtime.reset();
+//            while(opModeIsActive() && rings.state_s != RingHandling.shooterStates.NOTHING) {
+//                rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
+//                if (runtime.milliseconds() > 10000) {
+//                    rings.stopShooting();
+//                    break;
+//                }
+//            }
+//            rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
+//            PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
+//            drive.followTrajectory(parkB);
+//            PersistentStorage.currentPose = drive.getPoseEstimate();
+            for (int i = 0; i < targetsList.size(); i++) {
+                double calcHeading = rings.shootGetHeading(drive.getPoseEstimate(), targetsList.get(i));
+                double currentHeading = drive.getPoseEstimate().getHeading();
+                if (Math.abs(calcHeading - currentHeading) < Math.PI) {
+                    drive.turn(calcHeading - currentHeading);
+                }
+                else if (calcHeading - currentHeading > 0){
+                    drive.turn((calcHeading - currentHeading) - 2 * Math.PI);
+                }
+                else {
+                    drive.turn(2 * Math.PI + (calcHeading - currentHeading));
+                }
+                rings.shoot();
+                PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
+                runtime.reset();
+                while(opModeIsActive() && rings.state_s != RingHandling.shooterStates.NOTHING) {
+                    rings.update(runtime.milliseconds(), drive.getPoseEstimate(), targetsList.get(i));
+                    if (runtime.milliseconds() > 4000) {
+                        rings.stopShooting();
+                        break;
+                    }
                 }
             }
-            rings.update(runtime.milliseconds(), drive.getPoseEstimate(), "red high");
+            rings.update(runtime.milliseconds(), drive.getPoseEstimate(), targetsList.get(targetsList.size() - 1));
             PersistentStorage.currentPose = drive.getPoseEstimate(); // fail safes for if opmode exits before finishing
             drive.followTrajectory(parkB);
             PersistentStorage.currentPose = drive.getPoseEstimate();

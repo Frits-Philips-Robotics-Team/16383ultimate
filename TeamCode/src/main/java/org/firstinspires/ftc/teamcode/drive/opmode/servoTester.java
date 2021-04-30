@@ -27,7 +27,7 @@ public class servoTester extends OpMode {
 
     @Override
     public void init() {
-        servo_one = hardwareMap.get(Servo.class, "gripper");
+        servo_one = hardwareMap.get(Servo.class, "blocker");
         servo_two = hardwareMap.get(Servo.class, "arm");
 
         angleOne = 0.5;

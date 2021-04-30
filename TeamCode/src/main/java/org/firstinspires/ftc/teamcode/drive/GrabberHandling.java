@@ -17,9 +17,10 @@ public class GrabberHandling {
 
 
     public void moveGrabber(String armPos, String gripperPos) {
-        final double upHalfValue = 0.5;
-        final double inSizeValue = 0.84;
-        final double downValue = 0.15;
+        final double upHalfValue = 0.6;
+        final double inSizeValue = 0.93;
+        final double straightValue = 0.26;
+        final double downValue = 0.2;
         final double openValue = 1;
         final double closedValue = 0.55;
 
@@ -27,6 +28,8 @@ public class GrabberHandling {
             case "upHalf": arm.setPosition(upHalfValue);
                 break;
             case "inSize": arm.setPosition(inSizeValue);
+                break;
+            case "straight": arm.setPosition(straightValue);
                 break;
             case "down":   arm.setPosition(downValue);
                 break;

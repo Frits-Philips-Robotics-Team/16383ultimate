@@ -23,7 +23,7 @@ public class RingHandling {
     DistanceSensor distance;
 
     private VoltageSensor batteryVoltageSensor;
-    PIDFCoefficients pidf = new PIDFCoefficients(60, 0.01, 0.01, 14.3);
+    PIDFCoefficients pidf = new PIDFCoefficients(60, 1, 0.01, 14.1);
 
     double pusherStart;
     double shooterTime;
@@ -91,13 +91,13 @@ public class RingHandling {
             tower = new Pose2d(72, 36);
         }
         else if (target.equals("red left")) {
-            tower = new Pose2d(72, -10);
+            tower = new Pose2d(72, -8);
         }
         else if (target.equals("red mid")) {
-            tower = new Pose2d(72, -18);
+            tower = new Pose2d(72, -16);
         }
         else {
-            tower = new Pose2d(72, -24);
+            tower = new Pose2d(72, -21);
         }
 
         currentPose = currentPose.minus(tower);
@@ -118,16 +118,16 @@ public class RingHandling {
             goalHeight = 44;
         }
         else if (target.equals("red left")) {
-            tower = new Pose2d(72, -10);
-            goalHeight = 37;
+            tower = new Pose2d(72, -8);
+            goalHeight = 35.5;
         }
         else if (target.equals("red mid")) {
-            tower = new Pose2d(72, -18);
-            goalHeight = 37;
+            tower = new Pose2d(72, -16);
+            goalHeight = 35.5;
         }
         else {
-            tower = new Pose2d(72, -24);
-            goalHeight = 37;
+            tower = new Pose2d(72, -21);
+            goalHeight = 35.5;
         }
 
         currentPose = currentPose.minus(tower);
@@ -147,13 +147,13 @@ public class RingHandling {
             tower = new Pose2d(72, 36);
         }
         else if (target.equals("red left")) {
-            tower = new Pose2d(72, -10);
+            tower = new Pose2d(72, -8);
         }
         else if (target.equals("red mid")) {
-            tower = new Pose2d(72, -18);
+            tower = new Pose2d(72, -16);
         }
         else {
-            tower = new Pose2d(72, -24);
+            tower = new Pose2d(72, -21);
         }
 
         currentPose = currentPose.minus(tower);
@@ -216,7 +216,7 @@ public class RingHandling {
                 state_s = shooterStates.CHECKRPM;
                 break;
             case CHECKRPM:
-                if (getRPM() > (calcRPM - 50) && getRPM() < (calcRPM + 40)) {
+                if (getRPM() > (calcRPM - 60) && getRPM() < (calcRPM + 60)) {
                     if (shooterTime == -1) {
                         shooterTime = time;
                     }

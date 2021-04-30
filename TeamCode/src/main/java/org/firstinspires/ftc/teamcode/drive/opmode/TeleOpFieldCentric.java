@@ -33,15 +33,20 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.GrabberHandling;
 import org.firstinspires.ftc.teamcode.drive.RingHandling;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.PersistentStorage;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Config
 @TeleOp(name="TeleOp Field Centric", group="basic")
@@ -50,6 +55,7 @@ public class TeleOpFieldCentric extends OpMode
     SampleMecanumDrive drive;
     RingHandling rings;
     GrabberHandling grabber;
+    Servo blocker;
 
     RevBlinkinLedDriver blinkin;
     RevBlinkinLedDriver.BlinkinPattern pattern;
@@ -66,6 +72,7 @@ public class TeleOpFieldCentric extends OpMode
 
     boolean grabberClosed;
 
+    private int shootingStep;
     String target;
     Pose2d poseOffset;
     /*
@@ -79,6 +86,9 @@ public class TeleOpFieldCentric extends OpMode
         rings = new RingHandling(hardwareMap);
         grabber = new GrabberHandling(hardwareMap);
 
+        blocker = hardwareMap.get(Servo.class, "blocker");
+        blocker.setPosition(0.75);
+
         blinkin = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
         blinkin.setPattern(RevBlinkinLedDriver.BlinkinPattern.SKY_BLUE);
         //drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -89,6 +99,7 @@ public class TeleOpFieldCentric extends OpMode
         rotationSetpoint = currentHeading = PersistentStorage.currentPose.getHeading();
         poseOffset = new Pose2d(0, 0, 0);
 
+        shootingStep = -1;
         target = "red high";
 
         grabber.moveGrabber("inSize", "closed");
@@ -181,6 +192,7 @@ public class TeleOpFieldCentric extends OpMode
                 else {
                     drive.turn(2 * Math.PI + (calcHeading - currentHeading));
                 }
+                blocker.setPosition(0.14);
                 rings.shoot();
                 wasRotating = true;
                 rotateTimer.reset();
@@ -190,13 +202,64 @@ public class TeleOpFieldCentric extends OpMode
             rings.stopShooting();
         }
 
+        if (gamepad1.left_trigger == 1) {
+            Pose2d shootPose = new Pose2d(-2, -25, 0);
+            List<String> targetsList = Arrays.asList("red right", "red mid", "red left");
+
+            Vector2d headingVector = new Vector2d(drive.getPoseEstimate().minus(shootPose).getX(), drive.getPoseEstimate().minus(shootPose).getY());
+            Trajectory shootPower = drive.trajectoryBuilder(drive.getPoseEstimate(), headingVector.angle())
+                    .splineToSplineHeading(shootPose, headingVector.angle())
+                    .build();
+            drive.followTrajectory(shootPower);
+            wasRotating = true;
+
+            shootingStep = 0;
+        }
+
+        if (shootingStep != -1) {
+            List<String> targetsList = Arrays.asList("red right", "red mid", "red left");
+            switch (shootingStep) {
+                case 0: case 2: case 4:
+                    double calcHeading = rings.shootGetHeading(drive.getPoseEstimate(), targetsList.get(shootingStep/2));
+                    double currentHeading = drive.getPoseEstimate().getHeading();
+
+                    if (Math.abs(calcHeading - currentHeading) < Math.PI) {
+                        drive.turn(calcHeading - currentHeading);
+                    }
+                    else if (calcHeading - currentHeading > 0){
+                        drive.turn((calcHeading - currentHeading) - 2 * Math.PI);
+                    }
+                    else {
+                        drive.turn(2 * Math.PI + (calcHeading - currentHeading));
+                    }
+                    wasRotating = true;
+
+                    target = targetsList.get(shootingStep/2);
+                    rings.shoot();
+
+                    shootingStep++;
+                    break;
+                case 1: case 3: case 5:
+                    if (rings.state_s == RingHandling.shooterStates.NOTHING) {
+                        shootingStep++;
+                    }
+                    break;
+                case 6:
+                    shootingStep = -1;
+                    target = "red high";
+                    break;
+            }
+
+        }
+
         if (rings.state_s == RingHandling.shooterStates.NOTHING && pattern == RevBlinkinLedDriver.BlinkinPattern.HEARTBEAT_RED) {
             pattern = RevBlinkinLedDriver.BlinkinPattern.CP2_HEARTBEAT_SLOW;
+            blocker.setPosition(0.5);
         }
 
         if (gamepad2.right_bumper) {
-            drive.setPoseEstimate(new Pose2d(-62.3, -64.2, Math.PI));
-            PersistentStorage.currentPose = new Pose2d(-62.3, -64.2, Math.PI);
+            drive.setPoseEstimate(new Pose2d(-62, -63.8, Math.PI));
+            PersistentStorage.currentPose = new Pose2d(-62, -63.8, Math.PI);
             wasRotating = true;
         }
 
