@@ -97,8 +97,8 @@ public class DetectRandomisation extends LinearOpMode {
                 .splineToLinearHeading(new Pose2d(12, -46, Math.PI), 0)
                 .build();
         Trajectory shootA = drive.trajectoryBuilder(dropA2.end(), 0.5 * Math.PI)
-                .splineToSplineHeading(new Pose2d(6, -32, 0.5 * Math.PI), Math.PI)
-                .splineToSplineHeading(new Pose2d(-2, -25, 0), Math.PI)
+                .splineToSplineHeading(new Pose2d(6, -32, 0), Math.toRadians(120))
+                .splineToConstantHeading(new Vector2d(-2, -25), Math.PI)
                 .build();
         Trajectory parkA = drive.trajectoryBuilder(shootA.end(), 0)
                 .splineToLinearHeading(new Pose2d(12, shootA.end().getY(), 0), 0)
@@ -137,6 +137,10 @@ public class DetectRandomisation extends LinearOpMode {
                 .build();
 
         Trajectory grabWobble = drive.trajectoryBuilder(pickUpA.end(), Math.PI)
+                .strafeRight(-9)
+                .build();
+
+        Trajectory grabWobbleC = drive.trajectoryBuilder(pickUpC.end(), Math.PI)
                 .strafeRight(-9)
                 .build();
 
@@ -243,7 +247,7 @@ public class DetectRandomisation extends LinearOpMode {
             drive.followTrajectory(pickUpC);
             grabber.moveGrabber("down", "open");
             sleep(200);
-            drive.followTrajectory(grabWobble);
+            drive.followTrajectory(grabWobbleC);
             grabber.moveGrabber("down", "closed");
             sleep(300);
             grabber.moveGrabber("upHalf", "closed");

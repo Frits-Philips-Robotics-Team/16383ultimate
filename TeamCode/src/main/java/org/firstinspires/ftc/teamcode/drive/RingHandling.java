@@ -23,7 +23,7 @@ public class RingHandling {
     DistanceSensor distance;
 
     private VoltageSensor batteryVoltageSensor;
-    PIDFCoefficients pidf = new PIDFCoefficients(60, 1, 0.01, 14.1);
+    PIDFCoefficients pidf = new PIDFCoefficients(60, 0.09, 0.01, 13.3);
 
     double pusherStart;
     double shooterTime;
@@ -94,7 +94,7 @@ public class RingHandling {
             tower = new Pose2d(72, -8);
         }
         else if (target.equals("red mid")) {
-            tower = new Pose2d(72, -16);
+            tower = new Pose2d(72, -15);
         }
         else {
             tower = new Pose2d(72, -21);
@@ -111,23 +111,23 @@ public class RingHandling {
 
         if (target.equals("red high")) {
             tower = new Pose2d(72, -38);
-            goalHeight = 44;
+            goalHeight = 43.5;
         }
         else if (target.equals("blue high")) {
             tower = new Pose2d(72, 36);
-            goalHeight = 44;
+            goalHeight = 43.5;
         }
         else if (target.equals("red left")) {
             tower = new Pose2d(72, -8);
-            goalHeight = 35.5;
+            goalHeight = 33.5;
         }
         else if (target.equals("red mid")) {
-            tower = new Pose2d(72, -16);
-            goalHeight = 35.5;
+            tower = new Pose2d(72, -15);
+            goalHeight = 33.5;
         }
         else {
             tower = new Pose2d(72, -21);
-            goalHeight = 35.5;
+            goalHeight = 33.5;
         }
 
         currentPose = currentPose.minus(tower);
@@ -150,7 +150,7 @@ public class RingHandling {
             tower = new Pose2d(72, -8);
         }
         else if (target.equals("red mid")) {
-            tower = new Pose2d(72, -16);
+            tower = new Pose2d(72, -15);
         }
         else {
             tower = new Pose2d(72, -21);
